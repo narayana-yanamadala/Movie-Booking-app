@@ -38,7 +38,7 @@ export default function OTPVerify() {
       setError("");
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/send-otp/",
+        "https://cinerush-backend.onrender.com/api/send-otp/",
         {
           email: email
         }
@@ -71,7 +71,7 @@ alert(JSON.stringify(response.data));
     try {
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/verify-otp/",
+        "https://cinerush-backend.onrender.com/api/verify-otp/",
         {
           email: email,
           otp: code

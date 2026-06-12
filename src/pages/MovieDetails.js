@@ -18,7 +18,9 @@ export default function MovieDetails() {
   useEffect(() => {
     const fetchMovie = async () => {
       try {
-        const response = await axios.get(`http://127.0.0.1:8000/api/movies/${id}/`);
+        const response = await axios.get(
+  `https://cinerush-backend.onrender.com/api/movies/${id}/`
+);
         setMovie(response.data);
       } catch (err) {
         console.error(err);
