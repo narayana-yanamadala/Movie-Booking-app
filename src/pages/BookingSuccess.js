@@ -34,9 +34,10 @@ export default function BookingSuccess() {
           </div>
           <div className="ticket-body">
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
-              <div className="floating">
-                <QRCode value={qrData} size={120} bgColor="transparent" fgColor="var(--text)" level="M" />
-              </div>
+             <QRCode
+             value={qrData}
+              size={120}
+              />  
             </div>
             <div className="ticket-row"><span className="text-muted">Booking ID</span><span className="text-accent font-bold">{booking.id}</span></div>
             <div className="ticket-row"><span className="text-muted">Movie</span><span className="font-bold">{booking.movieTitle}</span></div>

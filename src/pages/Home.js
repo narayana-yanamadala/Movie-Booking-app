@@ -1,134 +1,298 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { movies } from '../data/movies';
+import axios from 'axios';
 import MovieCard from '../components/MovieCard';
 import { SkeletonGrid } from '../components/LoadingSkeleton';
 
-const heroMovies = movies.filter(m => m.trending);
-
 export default function Home() {
+  const navigate = useNavigate();
+
+  const [movies, setMovies] = useState([]);
   const [slide, setSlide] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(t);
+    fetchMovies();
   }, []);
+
+  const fetchMovies = async () => {
+    try {
+      const res = await axios.get(
+        'http://127.0.0.1:8000/api/movies/'
+      );
+
+      setMovies(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const heroMovies = movies.slice(0, 5);
 
   useEffect(() => {
-    const t = setInterval(() => setSlide(s => (s + 1) % heroMovies.length), 5000);
-    return () => clearInterval(t);
-  }, []);
+    if (!heroMovies.length) return;
 
-  const trending = movies.filter(m => m.trending);
-  const upcoming = movies.filter(m => m.upcoming);
+    const timer = setInterval(() => {
+      setSlide(prev => (prev + 1) % heroMovies.length);
+    }, 5000);
+
+    return () => clearInterval(timer);
+  }, [heroMovies.length]);
+
   const current = heroMovies[slide];
 
   const handleSearch = (e) => {
     e.preventDefault();
-    if (search.trim()) navigate(`/movies?search=${search}`);
+
+    if (search.trim()) {
+      navigate(`/movies?search=${search}`);
+    }
   };
 
   return (
     <div className="page">
-      {/* Hero */}
-      <div className="hero">
-        {heroMovies.map((m, i) => (
-          <div key={m.id} className="hero-slide" style={{ opacity: i === slide ? 1 : 0, zIndex: i === slide ? 1 : 0 }}>
-            <img src={m.banner} alt={m.title} />
-          </div>
-        ))}
-        <div className="hero-content">
-          <div className="hero-badge">🔥 Now Showing</div>
-          <h1 className="hero-title">{current?.title}</h1>
-          <div className="hero-meta">
-            <span className="hero-rating">⭐ {current?.rating}/10</span>
-            {current?.genre.map(g => <span key={g} className="hero-tag">{g}</span>)}
-            <span className="hero-tag">🕐 {current?.duration}</span>
-          </div>
-          <p className="hero-desc">{current?.description}</p>
-          <div className="flex gap-3">
-            <button className="btn btn-primary btn-lg" onClick={() => navigate(`/movie/${current?.id}`)}>
-              🎬 Book Tickets
-            </button>
-            <button className="btn btn-secondary btn-lg" onClick={() => navigate(`/movie/${current?.id}`)}>
-              ▶ Trailer
-            </button>
-          </div>
-        </div>
-        <div className="hero-dots">
-          {heroMovies.map((_, i) => (
-            <div key={i} className={`hero-dot ${i === slide ? 'active' : ''}`} onClick={() => setSlide(i)} />
-          ))}
-        </div>
-      </div>
 
-      {/* Search */}
-      <div className="section" style={{ paddingTop: '2rem', paddingBottom: '1rem' }}>
+      {/* HERO SECTION */}
+      {current && (
+        <div className="hero">
+          {heroMovies.map((movie, index) => (
+            <div
+              key={movie.id}
+              className="hero-slide"
+              style={{
+                opacity: index === slide ? 1 : 0,
+                zIndex: index === slide ? 1 : 0
+              }}
+            >
+              <img
+                src={movie.banner}
+                alt={movie.title}
+              />
+            </div>
+          ))}
+
+          <div className="hero-content">
+            <div className="hero-badge">
+              🔥 Now Showing
+            </div>
+
+            <h1 className="hero-title">
+              {current.title}
+            </h1>
+
+            <div className="hero-meta">
+              <span className="hero-rating">
+                ⭐ {current.rating}/10
+              </span>
+
+              <span className="hero-tag">
+                {current.genre}
+              </span>
+
+              <span className="hero-tag">
+                🕐 {current.duration}
+              </span>
+
+              <span className="hero-tag">
+                🌐 {current.language}
+              </span>
+            </div>
+
+            <p className="hero-desc">
+              {current.description}
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                className="btn btn-primary btn-lg"
+                onClick={() =>
+                  navigate(`/movie/${current.id}`)
+                }
+              >
+                🎬 Book Tickets
+              </button>
+
+              {current.trailer_url && (
+                <button
+                  className="btn btn-secondary btn-lg"
+                  onClick={() =>
+                    window.open(current.trailer_url, '_blank')
+                  }
+                >
+                  ▶ Trailer
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="hero-dots">
+            {heroMovies.map((_, index) => (
+              <div
+                key={index}
+                className={`hero-dot ${
+                  slide === index ? 'active' : ''
+                }`}
+                onClick={() => setSlide(index)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* SEARCH */}
+      <div
+        className="section"
+        style={{
+          paddingTop: '2rem',
+          paddingBottom: '1rem'
+        }}
+      >
         <form onSubmit={handleSearch}>
-          <div className="search-bar" style={{ maxWidth: '600px', margin: '0 auto', padding: '0.85rem 1.25rem' }}>
-            <span style={{ fontSize: '1.2rem' }}>🔍</span>
+          <div
+            className="search-bar"
+            style={{
+              maxWidth: '600px',
+              margin: '0 auto',
+              padding: '0.85rem 1.25rem'
+            }}
+          >
+            <span style={{ fontSize: '1.2rem' }}>
+              🔍
+            </span>
+
             <input
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search for movies, genres, actors..."
-              style={{ fontSize: '1rem' }}
+              onChange={(e) =>
+                setSearch(e.target.value)
+              }
+              placeholder="Search movies..."
             />
-            <button type="submit" className="btn btn-primary btn-sm">Search</button>
+
+            <button
+              type="submit"
+              className="btn btn-primary btn-sm"
+            >
+              Search
+            </button>
           </div>
         </form>
       </div>
 
-      {/* Trending */}
+      {/* MOVIES */}
       <div className="section">
         <div className="section-header">
-          <h2 className="section-title">🔥 Trending <span>Movies</span></h2>
-          <button className="btn btn-outline btn-sm" onClick={() => navigate('/movies')}>View All →</button>
+          <h2 className="section-title">
+            🎬 All <span>Movies</span>
+          </h2>
+
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={() => navigate('/movies')}
+          >
+            View All →
+          </button>
         </div>
-        {loading ? <SkeletonGrid count={4} /> : (
+
+        {loading ? (
+          <SkeletonGrid count={6} />
+        ) : (
           <div className="movies-grid">
-            {trending.map(m => <MovieCard key={m.id} movie={m} />)}
+            {movies.slice(0, 8).map(movie => (
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+              />
+            ))}
           </div>
         )}
       </div>
 
-      {/* Upcoming */}
+      {/* FEATURES */}
       <div className="section">
-        <div className="section-header">
-          <h2 className="section-title">🗓 Coming <span>Soon</span></h2>
-          <button className="btn btn-outline btn-sm" onClick={() => navigate('/movies?tab=upcoming')}>View All →</button>
-        </div>
-        {loading ? <SkeletonGrid count={3} /> : (
-          <div className="scroll-x">
-            {upcoming.map(m => <MovieCard key={m.id} movie={m} />)}
-          </div>
-        )}
-      </div>
-
-      {/* Why CineRush */}
-      <div className="section">
-        <div className="grid-4" style={{ textAlign: 'center' }}>
+        <div
+          className="grid-4"
+          style={{ textAlign: 'center' }}
+        >
           {[
-            { icon: '🎭', title: 'All Genres', desc: 'Action, Drama, Comedy, Horror & more' },
-            { icon: '💺', title: 'Easy Seat Selection', desc: 'Pick your perfect seat instantly' },
-            { icon: '💳', title: 'Secure Payment', desc: 'UPI, Cards & Net Banking supported' },
-            { icon: '📱', title: 'E-Tickets', desc: 'QR code tickets on your phone' },
-          ].map(f => (
-            <div key={f.title} className="card" style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>{f.icon}</div>
-              <div style={{ fontWeight: 700, marginBottom: '0.4rem' }}>{f.title}</div>
-              <div className="text-muted text-sm">{f.desc}</div>
+            {
+              icon: '🎭',
+              title: 'All Genres',
+              desc: 'Action, Drama, Comedy & More'
+            },
+            {
+              icon: '💺',
+              title: 'Seat Selection',
+              desc: 'Choose your perfect seats'
+            },
+            {
+              icon: '💳',
+              title: 'Secure Payment',
+              desc: 'Fast & Safe Checkout'
+            },
+            {
+              icon: '📱',
+              title: 'E-Tickets',
+              desc: 'Instant QR Tickets'
+            }
+          ].map(item => (
+            <div
+              key={item.title}
+              className="card"
+            >
+              <div
+                style={{
+                  fontSize: '2.5rem',
+                  marginBottom: '0.75rem'
+                }}
+              >
+                {item.icon}
+              </div>
+
+              <div
+                style={{
+                  fontWeight: 700,
+                  marginBottom: '0.4rem'
+                }}
+              >
+                {item.title}
+              </div>
+
+              <div className="text-muted text-sm">
+                {item.desc}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Footer */}
-      <footer style={{ background: 'var(--surface)', borderTop: '1px solid var(--border)', padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-        <div style={{ fontFamily: 'Bebas Neue', fontSize: '1.5rem', color: 'var(--accent)', marginBottom: '0.5rem' }}>CINE<span style={{ color: 'var(--gold)' }}>RUSH</span></div>
-        <p>© 2024 CineRush. Book smarter. Watch better.</p>
+      {/* FOOTER */}
+      <footer
+        style={{
+          background: 'var(--surface)',
+          borderTop: '1px solid var(--border)',
+          padding: '2rem',
+          textAlign: 'center'
+        }}
+      >
+        <div
+          style={{
+            fontFamily: 'Bebas Neue',
+            fontSize: '1.6rem',
+            color: 'var(--accent)'
+          }}
+        >
+          CINE
+          <span style={{ color: 'var(--gold)' }}>
+            RUSH
+          </span>
+        </div>
+
+        <p>
+          © 2026 CineRush. All Rights Reserved.
+        </p>
       </footer>
     </div>
   );

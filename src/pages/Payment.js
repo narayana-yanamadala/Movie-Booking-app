@@ -28,13 +28,41 @@ export default function Payment() {
     </div>
   );
 
-  const handlePay = () => {
+ const handlePay = async () => {
+  try {
     setProcessing(true);
-    setTimeout(() => {
-      setProcessing(false);
-      navigate('/otp-verify');
-    }, 2000);
-  };
+
+    const response = await fetch(
+      "http://127.0.0.1:8000/api/book-ticket/",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          movie_id: cart.movie.id,
+          theater: cart.theater.name,
+          show_date: "2026-06-12",
+          show_time: cart.time,
+          seats: cart.seats,
+          amount: grand
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("BOOKING RESPONSE:", data);
+
+    setProcessing(false);
+
+    navigate("/otp-verify");
+
+  } catch (error) {
+    console.log(error);
+    setProcessing(false);
+  }
+};
 
   const convenience = Math.round(cart.totalPrice * 0.05);
   const gst = Math.round((cart.totalPrice + convenience) * 0.18);

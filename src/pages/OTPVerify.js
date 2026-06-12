@@ -1,11 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import axios from 'axios';
 
 export default function OTPVerify() {
   const navigate = useNavigate();
   const { cart, addBooking } = useApp();
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [email, setEmail] = useState('');
   const [txnId, setTxnId] = useState('');
   const [tab, setTab] = useState('otp');
   const [verifying, setVerifying] = useState(false);
@@ -24,28 +26,104 @@ export default function OTPVerify() {
     if (e.key === 'Backspace' && !otp[i] && i > 0) refs.current[i - 1]?.focus();
   };
 
-  const handleVerify = () => {
+  const sendOTP = async () => {
+
+    if (!email) {
+      setError("Please enter email");
+      return;
+    }
+
+    try {
+
+      setError("");
+
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/send-otp/",
+        {
+          email: email
+        }
+      );
+
+      console.log("SEND OTP RESPONSE:", response.data);
+alert(JSON.stringify(response.data));
+
+    } catch (error) {
+
+      console.error(error);
+
+      setError("Failed to send OTP");
+
+    }
+  };
+
+  const handleVerify = async () => {
+
     const code = otp.join('');
-    if (tab === 'otp' && code.length < 6) { setError('Enter complete 6-digit OTP'); return; }
-    if (tab === 'txn' && !txnId.trim()) { setError('Enter Transaction ID'); return; }
+
+    if (code.length < 6) {
+      setError('Enter complete 6-digit OTP');
+      return;
+    }
+
     setVerifying(true);
     setError('');
-    setTimeout(() => {
-      const booking = {
-        id: 'BK' + Date.now().toString().slice(-6),
-        movieId: cart?.movie?.id,
-        movieTitle: cart?.movie?.title,
-        theater: cart?.theater?.name,
-        date: new Date().toISOString().split('T')[0],
-        time: cart?.time,
-        seats: cart?.seats,
-        totalPrice: cart?.totalPrice,
-        status: 'confirmed',
-        poster: cart?.movie?.poster,
-      };
-      addBooking(booking);
-      navigate('/booking-success', { state: { booking } });
-    }, 2000);
+
+    try {
+
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/verify-otp/",
+        {
+          email: email,
+          otp: code
+        }
+      );
+
+      console.log("VERIFY RESPONSE:", response.data);
+      alert(JSON.stringify(response.data));
+
+      if (response.data.success) {
+
+        const booking = {
+          id: 'BK' + Date.now().toString().slice(-6),
+          movieId: cart?.movie?.id,
+          movieTitle: cart?.movie?.title,
+          theater: cart?.theater?.name,
+          date: new Date().toISOString().split('T')[0],
+          time: cart?.time,
+          seats: cart?.seats,
+          totalPrice: cart?.totalPrice,
+          status: 'confirmed',
+          poster: cart?.movie?.poster,
+        };
+
+        addBooking(booking);
+
+        navigate('/booking-success', {
+          state: { booking }
+        });
+
+      } else {
+
+        setError(response.data.message || "Invalid OTP");
+
+      }
+
+    } catch (error) {
+
+      console.error(error);
+
+      if (error.response) {
+        console.log(error.response.data);
+        alert(JSON.stringify(error.response.data));
+      }
+
+      setError("OTP Verification Failed");
+
+    } finally {
+
+      setVerifying(false);
+
+    }
   };
 
   return (
@@ -63,6 +141,28 @@ export default function OTPVerify() {
 
         {tab === 'otp' ? (
           <>
+            <div className="form-group mb-3">
+              <input
+                className="form-input"
+                type="email"
+                placeholder="Enter Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <button
+              onClick={sendOTP}
+              style={{
+                background: "blue",
+                color: "white",
+                padding: "10px",
+                marginBottom: "10px"
+              }}
+            >
+              SEND OTP
+            </button>
+
             <p className="text-sm text-muted mb-3">Enter the 6-digit OTP sent to your registered mobile</p>
             <div className="otp-input mb-4">
               {otp.map((d, i) => (
