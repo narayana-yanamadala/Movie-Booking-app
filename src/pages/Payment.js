@@ -33,7 +33,7 @@ export default function Payment() {
     setProcessing(true);
 
     const response = await fetch(
-      "https://cinerush-backend.onrender.com/api/book-ticket/",
+      "http://127.0.0.1:8000/api/book-ticket/",
       {
         method: "POST",
         headers: {

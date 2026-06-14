@@ -19,7 +19,7 @@ export default function MovieDetails() {
     const fetchMovie = async () => {
       try {
         const response = await axios.get(
-  `https://cinerush-backend.onrender.com/api/movies/${id}/`
+  `http://127.0.0.1:8000/api/movies/${id}/`
 );
         setMovie(response.data);
       } catch (err) {
