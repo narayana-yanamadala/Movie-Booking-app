@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { theaters } from '../data/movies';
 import { useApp } from '../context/AppContext';
 import axios from 'axios';
+import { API_URL } from "../config";
 
 export default function MovieDetails() {
   const { id } = useParams();
@@ -19,7 +20,7 @@ export default function MovieDetails() {
     const fetchMovie = async () => {
       try {
         const response = await axios.get(
-  `http://127.0.0.1:8000/api/movies/${id}/`
+  `${API_URL}/api/movies/${id}/`
 );
         setMovie(response.data);
       } catch (err) {

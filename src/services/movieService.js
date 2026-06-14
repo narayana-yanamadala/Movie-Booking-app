@@ -1,10 +1,9 @@
 import axios from "axios";
-
-const API_URL = "http://127.0.0.1:8000/api/movies/";
+import { API_URL } from "../config";
 
 export const getMovies = async () => {
   try {
-    const response = await axios.get(API_URL);
+    const response = await axios.get(`${API_URL}/api/movies/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching movies:", error);
@@ -14,7 +13,7 @@ export const getMovies = async () => {
 
 export const getMovie = async (id) => {
   try {
-    const response = await axios.get(`${API_URL}${id}/`);
+    const response = await axios.get(`${API_URL}/api/movies/${id}/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching movie:", error);

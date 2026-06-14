@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import axios from 'axios';
+import { API_URL } from "../config";
 
 export default function OTPVerify() {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ export default function OTPVerify() {
       setError("");
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/send-otp/",
+        `${API_URL}/api/send-otp/`,
         {
           email: email
         }
@@ -71,7 +72,7 @@ alert(JSON.stringify(response.data));
     try {
 
       const response = await axios.post(
-        "http://127.0.0.1:8000/api/verify-otp/",
+        `${API_URL}/api/verify-otp/`,
         {
           email: email,
           otp: code

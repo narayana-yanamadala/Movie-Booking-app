@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import MovieCard from '../components/MovieCard';
 import { SkeletonGrid } from '../components/LoadingSkeleton';
+import { API_URL } from "../config";
+
 
 export default function Home() {
   const navigate = useNavigate();
@@ -19,7 +21,7 @@ export default function Home() {
   const fetchMovies = async () => {
     try {
       const res = await axios.get(
-  'http://127.0.0.1:8000/api/movies/'
+  `${API_URL}/api/movies/`
 );
 
       setMovies(res.data);

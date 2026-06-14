@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { API_URL } from "../config";
 
 const PAYMENT_OPTIONS = [
   { id: 'upi', icon: '📲', label: 'UPI', desc: 'Google Pay, PhonePe, Paytm' },
@@ -33,7 +34,7 @@ export default function Payment() {
     setProcessing(true);
 
     const response = await fetch(
-      "http://127.0.0.1:8000/api/book-ticket/",
+      `${API_URL}/api/book-ticket/`,
       {
         method: "POST",
         headers: {
